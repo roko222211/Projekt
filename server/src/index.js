@@ -16,7 +16,26 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
-app.use(cors());
+// CORS - allow frontend origin
+const allowedOrigins = [
+  'http://localhost:5173',  // Local dev
+  process.env.FRONTEND_URL   // Production (Vercel)
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (mobile apps, Postman, etc.)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
+
 app.use(express.json());
 app.use('/api/trends', trendsRoutes);
 app.use('/api/polymarket', polymarketTestRoutes);
