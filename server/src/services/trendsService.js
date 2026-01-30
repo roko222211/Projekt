@@ -27,7 +27,10 @@ export async function fetchGoogleTrends(keyword, date) {
   
   return new Promise((resolve, reject) => {
     const pythonScript = path.join(__dirname, '../../python/trends.py');
-    const pythonPath = path.join(__dirname, '../../python/venv/Scripts/python.exe');
+    const pythonPath = process.platform === 'win32' 
+  ? path.join(__dirname, '../../python/venv/Scripts/python.exe')
+  : 'python3';
+
     
     console.log(`🐍 Calling Python trends service...`);
     console.log(`   Keyword: "${keyword}", Date: ${date}`);
