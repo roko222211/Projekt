@@ -9,27 +9,31 @@ import batchRoutes from './routes/batchRoutes.js';
 import spxLiveRoutes from './routes/spxLiveRoutes.js';
 import momentumRoutes from './routes/momentumRoutes.js';
 
-
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// Middleware
 // CORS - allow frontend origin
 const allowedOrigins = [
-  'http://localhost:5173',  // Local dev
-  process.env.FRONTEND_URL   // Production (Vercel)
+  'http://localhost:5173',
+  'https://projekt-zeta-seven.vercel.app'  // ✅ Hardcoded production URL
 ];
+
+console.log('🔍 Allowed CORS origins:', allowedOrigins);
 
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (mobile apps, Postman, etc.)
+    console.log('🔍 CORS request from:', origin);
+    
+    // Allow requests with no origin (Postman, curl, etc.)
     if (!origin) return callback(null, true);
     
-    if (allowedOrigins.indexOf(origin) !== -1 || !origin) {
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      console.log('✅ CORS allowed');
       callback(null, true);
     } else {
+      console.error('❌ CORS blocked:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -45,10 +49,6 @@ app.use('/api/batch', batchRoutes);
 app.use('/api/spx', spxLiveRoutes);
 app.use('/api/momentum', momentumRoutes);
 
-
-
-
-
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ 
@@ -58,26 +58,7 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Routes will be added here
-
 app.listen(PORT, () => {
   console.log(`🚀 Server running on http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
-});
-
-
-// Database test endpoint
-app.get('/api/db-test', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT NOW() as current_time');
-    res.json({ 
-      status: 'Database connected!',
-      time: result.rows[0].current_time
-    });
-  } catch (error) {
-    res.status(500).json({ 
-      status: 'Database connection failed',
-      error: error.message 
-    });
-  }
 });
